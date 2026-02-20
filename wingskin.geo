@@ -17,3 +17,9 @@ Transfinite Surface {2};
 Transfinite Surface {1};
 //+
 
+//+
+Physical Curve("root", 11) = {6, 3};
+//+
+Physical Curve("tail", 12) = {5, 1};
+//+
+Physical Surface("skin", 13) = {2, 1};
