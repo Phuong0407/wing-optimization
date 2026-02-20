@@ -1,41 +1,17 @@
 import meshio
 import numpy as np
 
-# Đọc file .msh từ Gmsh
 msh = meshio.read("wingTRI.msh")
 
-# Lấy triangle cells
-tri_cells = msh.get_cells_type("triangle")
+msh.points[:, :3] *= 1e-3
 
-# Nếu là mesh 2D nằm trong mặt phẳng 3D (z = 0),
-# FEniCS legacy thường cần bỏ tọa độ z
+triangle_cells = msh.cells_dict["triangle"]
+triangle_data  = msh.cell_data_dict["gmsh:physical"]["triangle"]
 
-# Tạo meshio mesh chỉ chứa triangle
-mesh = meshio.Mesh(
+triangle_mesh = meshio.Mesh(
     points=msh.points,
-    cells=[("triangle", tri_cells)],
+    cells=[("triangle", triangle_cells)],
+    cell_data={"gmsh:physical": [triangle_data]},
 )
 
-print(msh.points.shape)
-
-# Ghi ra XDMF (format ổn định nhất cho FEniCS)
-meshio.write(
-    "wingTRI.xdmf",
-    mesh,
-    file_format="xdmf",
-    data_format="HDF",
-)
-
-# -------------------------
-# Đọc vào FEniCS
-# -------------------------
-
-from dolfin import *
-
-mesh = Mesh()
-with XDMFFile("wingTRI.xdmf") as infile:
-    infile.read(mesh)
-
-# Xuất lại để kiểm tra
-with XDMFFile("check_mesh.xdmf") as f:
-    f.write(mesh)
+meshio.write("wingTRI.xdmf", triangle_mesh)
