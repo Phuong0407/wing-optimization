@@ -10,7 +10,8 @@ nu = Constant(0.3)
 lmbda = E * nu / (1 + nu) / (1 - 2 * nu)
 mu = E / 2 / (1 + nu)
 lmbda_ps = 2 * lmbda * mu / (lmbda + 2 * mu)
-g = Constant((0.0, 0.0, -9.81)) 
+
+g = Constant((0.0, 0.0, -9.81))
 f = rho * thick * g
 
 filename = "wingTRI.xdmf"
@@ -25,7 +26,7 @@ with XDMFFile("wingTRI.xdmf") as infile:
 
 import numpy as np
 bbox = np.ptp(mesh.coordinates(), axis=0)
-print("bbox (Δx, Δy, Δz) =", bbox)
+print("bbox (Delta x, Delta y, Delta z) =", bbox)
 
 facets = cpp.mesh.MeshFunctionSizet(mesh, mvc)
 

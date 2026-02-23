@@ -1,7 +1,7 @@
 import meshio
 import numpy as np
 
-FEMMESHFILE = "wing.msh"
+FEMMESHFILE = "../meshdata/wing.msh"
 mesh = meshio.read(FEMMESHFILE)
 
 cells  = mesh.cells_dict["triangle"]
