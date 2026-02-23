@@ -5,7 +5,7 @@ from vtk.util.numpy_support import vtk_to_numpy
 
 # Reading OpenFOAM data in the form of VTK file
 # Provide the data file with extension .vtp
-FOAMFILE = "wing.vtp"
+FOAMFILE = "../meshdata/wing.vtp"
 FOAMReader = vtk.vtkXMLPolyDataReader()
 FOAMReader.SetFileName(FOAMFILE)
 FOAMReader.Update()
