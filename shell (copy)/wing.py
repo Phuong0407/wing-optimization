@@ -33,7 +33,7 @@ print(f"Topological dimension = {tdim}")
 
 
 # material parameters
-thick = fem.Constant(domain, 6E-3)
+thick = fem.Constant(domain, 1E-3)
 E = fem.Constant(domain, 210e9)
 nu = fem.Constant(domain, 0.3)
 lmbda = E * nu / (1 + nu) / (1 - 2 * nu)
@@ -288,7 +288,7 @@ print(f"f_traction array range: {f_traction.x.array.min():.4e} -> {f_traction.x.
 print(f"FEM pts range: {domain.geometry.x.min(axis=0)} -> {domain.geometry.x.max(axis=0)}")
 
 # ─── 5. Visualization ───────────────────────────────────────────────────────
-u_out= v.sub(0).collapse()
+u_out = v.sub(0).collapse()
 u_out.name = "Displacement"
 
 theta_out = v.sub(1).collapse()
@@ -298,35 +298,5 @@ with io.VTKFile(MPI.COMM_WORLD, results_folder / "results.pvd", "w") as vtk:
     vtk.write_function(u_out, 0.0)
     vtk.write_function(theta_out, 0.0)
 
-
-
-# ─── 5. Output Results ───────────────────────────────────────────────────────
-
-from dolfinx import io
-
-results_folder = Path("Results")
-results_folder.mkdir(exist_ok=True, parents=True)
-
-# Collapse once
-u_out = v.sub(0).collapse()
-u_out.name = "Displacement"
-
-theta_out = v.sub(1).collapse()
-theta_out.name = "Rotation"
-
-# Write in XDMF (cleaner than PVD)
-with io.XDMFFile(MPI.COMM_WORLD, results_folder / "results.xdmf", "w") as xdmf:
-    xdmf.write_mesh(domain)
-    xdmf.write_function(u_out)
-    xdmf.write_function(theta_out)
-
-# ─── Compute max displacement magnitude (MPI-safe) ──────────────────────────
-
-u_arr = u_out.x.array.reshape(-1, domain.geometry.dim)
-local_max = np.max(np.linalg.norm(u_arr, axis=1))
-global_max = MPI.COMM_WORLD.allreduce(local_max, op=MPI.MAX)
-
-if MPI.COMM_WORLD.rank == 0:
-    print(f"Max displacement magnitude: {global_max:.6e} m")
 
 

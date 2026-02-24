@@ -1,0 +1,10 @@
+MON_MESH = LIRE 'STL' 'wing.stl' ;
+ELIM 1.E-6 MON_MESH ;
+
+* Export sang MED
+OPTI 'SORT' 'wing_castem.med' ;
+SORT 'MED' MON_MESH ;
+
+* Hoặc export sang Nastran
+* OPTI 'SORT' 'wing_castem.nas' ;
+* SORT 'NAS' MON_MESH ;
