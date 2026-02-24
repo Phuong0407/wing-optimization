@@ -1,0 +1,74 @@
+RESOLUTION
+chord-wise = 21
+span-wise  = 11
+=== Validation ===
+           OpenFOAM       Mapped    Error %
+------------------------------------------
+Fx        1133.0760    1152.8999      1.75%
+Fy       -4433.4000      12.7296    100.29%
+Fz       17824.7600   16941.4183      4.96%
+|F|      18402.7434   16980.6064      7.73%
+=== Diagnostics ===
+
+
+
+RESOLUTION
+chord-wise = 51
+span-wise  = 51
+=== Validation ===
+           OpenFOAM       Mapped    Error %
+------------------------------------------
+Fx        1133.0760    1152.8999      1.75%
+Fy       -4433.4000      12.7296    100.29%
+Fz       17824.7600   16941.4183      4.96%
+|F|      18402.7434   16980.6064      7.73%
+=== Diagnostics ===
+
+
+
+RESOLUTION
+chord-wise = 201
+span-wise  = 151
+=== Validation ===
+           OpenFOAM       Mapped    Error %
+------------------------------------------
+Fx        1133.0760    1152.8999      1.75%
+Fy       -4433.4000      12.7296    100.29%
+Fz       17824.7600   16941.4183      4.96%
+|F|      18402.7434   16980.6064      7.73%
+=== Diagnostics ===
+Points    : (189555, 3)
+Triangles : (378479, 3)
+y range   : 0.0000 → 3.0001
+Tip cap triangles : 3745
+Wing skin triangles: 374734
+
+=== Force Decomposition ===
+                     Fx         Fy         Fz
+--------------------------------------------
+Wing skin       1135.01    -359.95   17768.85
+Tip cap            0.75      136.05      27.34
+Total           1135.75    -223.90   17796.19
+OpenFOAM        1133.08   -4433.40   17824.76
+
+=== Error after tip cap ===
+Fx: 0.2%
+Fy: 94.9%
+Fz: 0.2%
+Integral of normals: [ 0.00771111  0.07531793 -0.00055922]
+p_inf * int_n      : [ 416.5506  4068.6406   -30.20896]
+
+F_gauge = [ 1135.7585   -223.89835 17796.166  ]
+F_abs   = [  719.0342 -4292.5244 17826.535 ]
+F_of    = [ 1133.08 -4433.4  17824.76]
+
+F_abs - F_gauge = [ -416.72437 -4068.626      30.36914]
+p_inf * int_n   = [ 416.5506  4068.6406   -30.20896]  ← phải match line trên
+
+Conclusion:
+F_abs_y  = -4292.52 N  vs  OF_y = -4433.40 N
+Remaining Fy error = 140.88 N
+
+
+
+

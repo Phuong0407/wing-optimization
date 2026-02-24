@@ -1,0 +1,194 @@
+**
+** ============================================================
+** CalculiX Benchmark File: Wing Shell Structure
+** Purpose: Benchmark against FEniCS Reissner-Mindlin shell
+** Author:  Numerical Project Team
+** Date:    2026-02-24
+**
+** Problem: Thin metallic wing under aerodynamic traction load
+** Shell element: S8R (8-node reduced integration quadrilateral)
+**               or S3 (3-node triangle, if mesh is triangular)
+**
+** Units: SI  (m, N, Pa, kg)
+** ============================================================
+**
+** ---- MATERIAL -----------------------------------------------
+*MATERIAL, NAME=STEEL
+*ELASTIC
+210E9, 0.3
+*DENSITY
+7850.0
+**
+** ---- SHELL SECTION ------------------------------------------
+** thickness = 6e-3 m  (matches FEniCS: thick = 6e-3)
+*SHELL SECTION, ELSET=WING_SURFACE, MATERIAL=STEEL, SECTION=NODAL
+1E-3
+**
+** ---- NODE DEFINITION ----------------------------------------
+** Replace this section with nodes exported from your FEM mesh.
+** Use the Python export script below to generate this block
+** from FEMMesh.xdmf automatically.
+**
+** Format:
+**   *NODE
+**   node_id, x, y, z
+**
+*NODE
+** <<< INSERT NODES HERE >>>
+** Example (3-node patch test):
+** 1, 0.0,   0.0, 0.0
+** 2, 0.5,   0.0, 0.0
+** 3, 1.0,   0.0, 0.0
+** ...
+**
+** ---- ELEMENT DEFINITION -------------------------------------
+** S3: 3-node linear triangle (compatible with FEniCS P1 mesh)
+** Format:
+**   *ELEMENT, TYPE=S3, ELSET=WING_SURFACE
+**   elem_id, n1, n2, n3
+**
+*ELEMENT, TYPE=S3, ELSET=WING_SURFACE
+** <<< INSERT ELEMENTS HERE >>>
+**
+** ---- BOUNDARY CONDITIONS ------------------------------------
+** Tag 11 = root (clamped), matching FEniCS bc definition
+**   facet_tags.find(11) -> Dirichlet u=0, theta=0
+**
+*NSET, NSET=ROOT_NODES
+** <<< INSERT ROOT NODE IDs HERE >>>
+**
+** Clamp all 6 DOF at root (u1,u2,u3,ur1,ur2,ur3)
+*BOUNDARY
+ROOT_NODES, 1, 6, 0.0
+**
+** ---- LOAD: AERODYNAMIC TRACTION ----------------------------
+** The traction vector (tx, ty, tz) is mapped from OpenFOAM
+** via TractionMapping.py → MappedTraction.xdmf
+**
+** Option A: Concentrated forces (sum traction over patch area)
+**   Use the Python helper below to compute nodal forces from
+**   the mapped traction field and write this block.
+**
+*CLOAD
+** <<< INSERT NODAL FORCES HERE >>>
+** Format: node_id, dof (1=x,2=y,3=z), value
+** Example: 42, 1, -15.3
+**
+** Option B: Distributed pressure (normal traction only)
+**   Use *DLOAD with P-type loading if only pressure is needed
+** *DLOAD
+** WING_SURFACE, P, <pressure_value>
+**
+** ---- STEP DEFINITION ----------------------------------------
+*STEP, NLGEOM=NO
+** Linear static analysis (same as FEniCS linear elasticity)
+*STATIC
+**
+** ---- OUTPUT REQUESTS ----------------------------------------
+** Node output: displacement (U), reaction forces (RF)
+*NODE FILE
+U, RF
+** Element output: stresses (S), strains (E), section forces (SF)
+*EL FILE
+S, E, SF
+**
+** Export to .frd (CalculiX native) and .dat (text) formats
+*NODE PRINT, NSET=ALL_NODES, FREQUENCY=1
+U
+*EL PRINT, ELSET=WING_SURFACE, FREQUENCY=1
+S
+**
+*END STEP
+**
+** ============================================================
+** PYTHON HELPER: Export FEM mesh to CalculiX format
+** Run this BEFORE CalculiX to generate node/element blocks
+** ============================================================
+**
+** Save as: export_to_calculix.py
+** Usage:   python export_to_calculix.py
+**
+** --- BEGIN PYTHON HELPER (comment block) ---
+**
+** import meshio
+** import numpy as np
+**
+** mesh = meshio.read("../data/CAD/FEMMesh.xdmf")
+** pts  = mesh.points                       # (N,3) in meters
+** tri  = mesh.cells_dict["triangle"]       # (M,3)
+**
+** # Load mapped traction from TractionMapping.py output
+** trac_mesh = meshio.read("../data/FORCE/MappedTraction.xdmf")
+** traction  = trac_mesh.point_data["traction"]  # (N,3) Pa
+**
+** # --- Identify root nodes (tag 11) from gmsh physical groups ---
+** # cell_data contains physical tag per triangle
+** phys = mesh.cell_data_dict["gmsh:physical"]["triangle"]
+** root_elems  = np.where(phys == 11)[0]
+** root_node_ids = np.unique(tri[root_elems].flatten())
+**
+** # --- Compute nodal areas for traction -> force conversion ---
+** def compute_nodal_areas(pts, tri):
+**     nodal_area = np.zeros(len(pts))
+**     for t in tri:
+**         v0, v1, v2 = pts[t[0]], pts[t[1]], pts[t[2]]
+**         area = 0.5 * np.linalg.norm(np.cross(v1-v0, v2-v0))
+**         nodal_area[t] += area / 3.0   # distribute equally
+**     return nodal_area
+**
+** nodal_area = compute_nodal_areas(pts, tri)
+** nodal_force = traction * nodal_area[:, np.newaxis]  # (N,3) in N
+**
+** # --- Write CalculiX .inp file blocks ---
+** with open("wing_ccx_nodes.inp", "w") as f:
+**     f.write("*NODE\n")
+**     for i, (x,y,z) in enumerate(pts):
+**         f.write(f"{i+1}, {x:.8e}, {y:.8e}, {z:.8e}\n")
+**
+** with open("wing_ccx_elements.inp", "w") as f:
+**     f.write("*ELEMENT, TYPE=S3, ELSET=WING_SURFACE\n")
+**     for i, (n1,n2,n3) in enumerate(tri):
+**         f.write(f"{i+1}, {n1+1}, {n2+1}, {n3+1}\n")
+**
+** with open("wing_ccx_bc.inp", "w") as f:
+**     f.write("*NSET, NSET=ROOT_NODES\n")
+**     ids = root_node_ids + 1
+**     for j in range(0, len(ids), 8):   # 8 IDs per line (CCX convention)
+**         f.write(", ".join(map(str, ids[j:j+8])) + "\n")
+**
+** with open("wing_ccx_load.inp", "w") as f:
+**     f.write("*CLOAD\n")
+**     for i, (fx,fy,fz) in enumerate(nodal_force):
+**         nid = i + 1
+**         if abs(fx) > 1e-12: f.write(f"{nid}, 1, {fx:.6e}\n")
+**         if abs(fy) > 1e-12: f.write(f"{nid}, 2, {fy:.6e}\n")
+**         if abs(fz) > 1e-12: f.write(f"{nid}, 3, {fz:.6e}\n")
+**
+** print("Done. Include the generated .inp files into wing_benchmark.inp")
+**
+** --- END PYTHON HELPER ---
+**
+** ============================================================
+** HOW TO RUN CALCULIX
+** ============================================================
+**
+**   1. Install: sudo apt install calculix-ccx  (or download from calculix.de)
+**   2. Run:     ccx wing_benchmark
+**   3. Output:  wing_benchmark.frd  (open with cgx or ParaView)
+**              wing_benchmark.dat  (text summary)
+**
+** ============================================================
+** BENCHMARK COMPARISON STRATEGY (FEniCS vs CalculiX)
+** ============================================================
+**
+** Quantity            FEniCS output          CCX output
+** ----------          -----------------------  ----------------------
+** Max displacement    v.sub(0) L2 norm         U from .frd file
+** Tip deflection      Point evaluation         Node at tip in .dat
+** Von Mises stress    sigma_vm expression      SDV / S output
+** Strain energy       assemble(inner(N,eps))   from *ENERGY output
+**
+** Convergence: run both solvers on 3 mesh refinements (h, h/2, h/4)
+** and plot L2 error vs element size on log-log axes.
+**
+** ============================================================

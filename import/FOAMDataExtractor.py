@@ -5,7 +5,7 @@ from vtk.util.numpy_support import vtk_to_numpy
 
 # Reading OpenFOAM data in the form of VTK file
 # Provide the data file with extension .vtp
-FOAMFILE = "../meshdata/wing.vtp"
+FOAMFILE = "../data/FOAM/wing.vtp"
 FOAMReader = vtk.vtkXMLPolyDataReader()
 FOAMReader.SetFileName(FOAMFILE)
 FOAMReader.Update()
@@ -71,5 +71,5 @@ mesh = meshio.Mesh(
   }
 )
 
-meshio.write("ExtractedFOAMData.xdmf", mesh)
+meshio.write("../data/FOAM/ExtractedFOAMData.xdmf", mesh)
 print("Export the wing-patch data from FOAM to the file ExtractedFOAMData.xdmf")

@@ -2,12 +2,12 @@ import meshio
 import numpy as np
 from scipy.interpolate import LinearNDInterpolator, NearestNDInterpolator
 
-FOAMDATAFILE = "ExtractedFOAMData.xdmf"
+FOAMDATAFILE = "../data/FOAM/ExtractedFOAMData.xdmf"
 FOAMMesh     = meshio.read(FOAMDATAFILE)
 FOAMPts      = FOAMMesh.points
 FOAMTraction = FOAMMesh.point_data["traction"]
 
-FEMMESHFILE  = "FEMMesh.xdmf"
+FEMMESHFILE  = "../data/CAD/FEMMesh.xdmf"
 FEMMesh      = meshio.read(FEMMESHFILE)
 FEMPts       = FEMMesh.points
 
@@ -26,5 +26,5 @@ MappedMesh = meshio.Mesh(
   cells=[("triangle",FEMMesh.cells_dict["triangle"])],
   point_data={"traction": MappedTraction}
 )
-meshio.write("MappedTraction.xdmf", MappedMesh)
+meshio.write("../data/FORCE/MappedTraction.xdmf", MappedMesh)
 print("Saved: MappedTraction.xdmf")
