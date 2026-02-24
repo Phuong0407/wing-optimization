@@ -14,16 +14,14 @@ lmbda_ps = 2 * lmbda * mu / (lmbda + 2 * mu)
 g = Constant((0.0, 0.0, -9.81))
 f = rho * thick * g
 
-filename = "wingTRI.xdmf"
+filename = "FEMMesh.xdmf"
 
 mesh = Mesh()
 mvc  = MeshValueCollection("size_t", mesh, 1)
 
-with XDMFFile("wingTRI.xdmf") as infile:
+with XDMFFile("FEMMesh.xdmf") as infile:
   print(type(mesh))
   infile.read(mesh)
-  infile.read(mvc, "gmsh:physical")
-
 import numpy as np
 bbox = np.ptp(mesh.coordinates(), axis=0)
 print("bbox (Delta x, Delta y, Delta z) =", bbox)
@@ -133,6 +131,10 @@ Wdef = (
 ) * dx
 a = derivative(Wdef, v, dv)
 Wext = dot(f, u_) * dx
+
+print("V.dim() =", V.dim())
+A = assemble(a)
+print("A size =", A.size(0), "nnz approx =", A.nnz())
 
 solve(a == Wext, v, bcs)
 

@@ -1,7 +1,7 @@
 import meshio
 import numpy as np
 
-msh = meshio.read("wingTRI.msh")
+msh = meshio.read("wing.msh")
 pts = msh.points * 1e-3
 tri = msh.cells_dict["triangle"]
 tags = msh.cell_data_dict["gmsh:physical"]["triangle"]
