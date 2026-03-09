@@ -209,17 +209,19 @@ __marimo__/
 
 _benchmark/
 .shell/
+shell1/
 .shell1/
-.skin1/
-.__shell__/
-.googlecloud/
-.rib1/
-.test/
-.test1/
-.wing_b/
+skin1/
+__shell__/
+googlecloud/
+rib1/
+test/
+test1/
+wing_b/
 .benchmark/
 .import0/
 .import1/
+data/
 
 activateconda.sh
 RibMeshGenerator.py
@@ -228,4 +230,15 @@ SkinRibCoupling.py
 wing/debug_*
 wing/ArchiveMesh
 
+*.vtk
+*.vtu
+*.xdmf
+*.h5
+*.geo
+*.msh
+*.med
+*.stl
+*.stp
+*.vtp
 
+.Rhistory
