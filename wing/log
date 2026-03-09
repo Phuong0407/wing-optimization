@@ -1,0 +1,135 @@
+Info    : Reading 'InputData/wing_new.msh'...
+Info    : 141 entities
+Info    : 15719 nodes
+Info    : 33543 elements
+Info    : Done reading 'InputData/wing_new.msh'
+  0 SNES Function norm 1.109695866713e+03
+  1 SNES Function norm 2.912896262575e-06
+
+
+
+[MAT] SKIN
+[SKIN] Layup   : [0, 45, -45, 90, 90, -45, 45, 0]
+[SKIN] H       : 6.00 mm
+[SKIN] max|B|  : 9.82e-11  SYMMETRIC
+[SKIN] A11     : 458.21 MPa·m
+[SKIN] D11     : 2309.1921 N·m^2
+
+[MAT] MAIN SPAR
+[MAINSPAR] Layup   : [0, 45, -45, 90, 90, -45, 45, 0]
+[MAINSPAR] H       : 6.00 mm
+[MAINSPAR] max|B|  : 9.82e-11  SYMMETRIC
+[MAINSPAR] A11     : 458.21 MPa·m
+[MAINSPAR] D11     : 2309.1921 N·m^2
+
+[MAT] TAIL SPAR
+[TAILSPAR] Layup   : [0, 45, -45, 90, 90, -45, 45, 0]
+[TAILSPAR] H       : 6.00 mm
+[TAILSPAR] max|B|  : 9.82e-11  SYMMETRIC
+[TAILSPAR] A11     : 458.21 MPa·m
+[TAILSPAR] D11     : 2309.1921 N·m^2
+
+[MAT] RIB
+[RIB] Layup   : [0, 45, -45, 90, 90, -45, 45, 0]
+[RIB] H       : 6.00 mm
+[RIB] max|B|  : 9.82e-11  SYMMETRIC
+[RIB] A11     : 458.21 MPa·m
+[RIB] D11     : 2309.1921 N·m^2
+
+[MESH] CELLS     : 32409
+[MESH] VERTICES  : 15719
+[MESH] TAG 14 : 14025 cells
+[MESH] TAG 15 : 13958 cells
+[MESH] TAG 43 : 1885 cells
+[MESH] TAG 44 : 953 cells
+[MESH] TAG 38 : 519 cells
+[MESH] TAG 39 : 397 cells
+[MESH] TAG 40 : 302 cells
+[MESH] TAG 41 : 220 cells
+[MESH] TAG 42 : 150 cells
+[BC] Root clamp: 678 displacement DOFs  | 342 rotation DOFs
+[FOAM] Total OpenFOAM force: [  625.63727 -4450.746   17810.252  ]
+[FOAM] Exported traction -> InputData/FOAMData.xdmf
+
+[MAP] FOAM force [N] : [  625.73773 -4450.6626  17810.025  ]
+[MAP] FEM  force [N] : [  681.55054222 -3807.00933091 18199.40710065]
+[MAP] Force error    : 4.11%
+[MAP] Skin nodes     : 14071 / 15719 total
+[MAP] Saved =====> InputData/MappedTraction.xdmf
+[LOAD] FEM  pts range : [ 0.5326087   0.38875766 -0.07035005] => [1.50793719 1.41981988 0.03967441]
+[LOAD] XDMF pts range : [ 1.13686838e-16  0.00000000e+00 -7.78381482e-02] => [2.499403   3.         0.04447427]
+[LOAD] Max KDTree dist : 6.2808e-16 m (should be < 1E-3 m)
+
+============================================================
+[POST] DISPLACEMENT & ROTATION
+============================================================
+  |ux| max : 4.024528e-03 m  (4.025 mm)
+  |uy| max : 3.345205e-03 m  (3.345 mm)
+  |uz| max : 1.083576e-01 m  (108.358 mm)
+  |u|  max : 1.084425e-01 m  (108.442 mm)
+
+  |thetax| max : 3.904111e-02 rad
+  |thetay| max : 2.562050e-02 rad
+  |thetaz| max : 2.009581e-03 rad
+
+============================================================
+[POST] COMPOSITE FAILURE (TSAI-WU)
+============================================================
+
+  SKIN  (7042 cells)
+  [SKIN]  ply   +0 deg  max FI = 0.2856
+  [SKIN]  ply  +45 deg  max FI = 0.2402
+  [SKIN]  ply  -45 deg  max FI = 0.0264
+  [SKIN]  ply  +90 deg  max FI = 0.0810
+  [SKIN]  ply  +90 deg  max FI = 0.0878
+  [SKIN]  ply  -45 deg  max FI = 0.0394
+  [SKIN]  ply  +45 deg  max FI = 0.2095
+  [SKIN]  ply   +0 deg  max FI = 0.1620
+  [SKIN]  Global max FI : 0.2856  =>  SF = 3.50
+
+  MAINSPAR  (497 cells)
+  [MAINSPAR]  ply   +0 deg  max FI = 0.1714
+  [MAINSPAR]  ply  +45 deg  max FI = 0.0702
+  [MAINSPAR]  ply  -45 deg  max FI = 0.0486
+  [MAINSPAR]  ply  +90 deg  max FI = 0.0915
+  [MAINSPAR]  ply  +90 deg  max FI = 0.0918
+  [MAINSPAR]  ply  -45 deg  max FI = 0.0422
+  [MAINSPAR]  ply  +45 deg  max FI = 0.0759
+  [MAINSPAR]  ply   +0 deg  max FI = 0.1648
+  [MAINSPAR]  Global max FI : 0.1714  =>  SF = 5.83
+
+  TAILSPAR  (224 cells)
+  [TAILSPAR]  ply   +0 deg  max FI = 0.0600
+  [TAILSPAR]  ply  +45 deg  max FI = 0.0791
+  [TAILSPAR]  ply  -45 deg  max FI = -0.0101
+  [TAILSPAR]  ply  +90 deg  max FI = 0.0518
+  [TAILSPAR]  ply  +90 deg  max FI = 0.0462
+  [TAILSPAR]  ply  -45 deg  max FI = -0.0173
+  [TAILSPAR]  ply  +45 deg  max FI = 0.0649
+  [TAILSPAR]  ply   +0 deg  max FI = 0.0865
+  [TAILSPAR]  Global max FI : 0.0865  =>  SF = 11.56
+
+  RIBS  (383 cells)
+  [RIBS]  ply   +0 deg  max FI = 0.0418
+  [RIBS]  ply  +45 deg  max FI = 0.0107
+  [RIBS]  ply  -45 deg  max FI = 0.0279
+  [RIBS]  ply  +90 deg  max FI = 0.0061
+  [RIBS]  ply  +90 deg  max FI = 0.0067
+  [RIBS]  ply  -45 deg  max FI = 0.0254
+  [RIBS]  ply  +45 deg  max FI = 0.0105
+  [RIBS]  ply   +0 deg  max FI = 0.0445
+  [RIBS]  Global max FI : 0.0445  =>  SF = 22.47
+
+============================================================
+[POST] SUMMARY
+============================================================
+  Max displacement magnitude : 108.442 mm
+
+  Composite regions — Tsai-Wu:
+    SKIN          FI = 0.2856   SF = 3.50
+    MAINSPAR      FI = 0.1714   SF = 5.83
+    TAILSPAR      FI = 0.0865   SF = 11.56
+    RIBS          FI = 0.0445   SF = 22.47
+
+[EXPORT] Results -> Result/results.xdmf
+[EXPORT] Material tags -> Result/material_tags.xdm

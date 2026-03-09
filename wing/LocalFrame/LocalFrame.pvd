@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<VTKFile type="Collection" version="1.0">
+  <Collection>
+    <DataSet timestep="0" part="0" file="LocalFrame000000.pvtu" />
+    <DataSet timestep="0" part="0" file="LocalFrame000001.pvtu" />
+    <DataSet timestep="0" part="0" file="LocalFrame000002.pvtu" />
+    <DataSet timestep="0" part="0" file="LocalFrame000003.pvtu" />
+  </Collection>
+</VTKFile>

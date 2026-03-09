@@ -1,0 +1,142 @@
+# extract_rib_members.py
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+import h5py
+from mpi4py import MPI
+from dolfinx import io, fem
+from dolfinx.fem import form, functionspace
+from dolfinx.mesh import compute_midpoints
+from scipy.spatial import KDTree
+import ufl
+
+with io.XDMFFile(MPI.COMM_WORLD, "topopt/rib_0_rho_final.xdmf", "r") as f:
+    domain = f.read_mesh(name="Grid")
+
+tdim      = domain.topology.dim
+num_cells = domain.topology.index_map(tdim).size_local
+midpoints = compute_midpoints(domain, tdim, np.arange(num_cells))
+pts       = domain.geometry.x
+cells     = np.array(domain.geometry.dofmap).reshape(-1, 3)
+centroids = pts[cells].mean(axis=1)
+
+with h5py.File("topopt/rib_0_rho_final.h5","r") as f:
+    density = f["Function/density/0"][:].flatten()
+
+# Geometry info
+x_min = pts[:,0].min(); x_max = pts[:,0].max()
+z_min = pts[:,2].min(); z_max = pts[:,2].max()
+chord = (x_max - x_min)*1e3
+thick = (z_max - z_min)*1e3
+x_le  = x_min*1e3
+
+# Smooth + threshold
+R_smooth = 0.030
+tree     = KDTree(centroids)
+dist_mat = tree.sparse_distance_matrix(tree, R_smooth).tocsr()
+dist_mat.data = np.maximum(R_smooth - dist_mat.data, 0)
+w_sum    = np.array(dist_mat.sum(1)).flatten()
+density_s = (dist_mat @ density) / (w_sum + 1e-30)
+
+THRESH = 0.5
+solid  = density_s > THRESH
+cx     = centroids[:,0]*1e3   # x en mm
+cz     = centroids[:,2]*1e3   # z en mm
+
+# ── IDENTIFIER LES MEMBRES STRUCTURAUX ───────────────────────────────
+# Phân chia theo X (chord direction)
+N_ZONES = 10
+x_edges = np.linspace(x_min*1e3, x_max*1e3, N_ZONES+1)
+
+print("="*60)
+print(f"RIB GEOMETRY: chord={chord:.0f}mm, thickness={thick:.0f}mm")
+print(f"LE at x={x_le:.1f}mm")
+print("="*60)
+print(f"\n{'Zone':>6} {'x_center':>10} {'solid%':>8} {'z_solid_min':>12} {'z_solid_max':>12} {'keep?':>6}")
+print("-"*60)
+
+zone_info = []
+for i in range(N_ZONES):
+    x0, x1   = x_edges[i], x_edges[i+1]
+    zone_mask = (cx >= x0) & (cx < x1)
+    if zone_mask.sum() == 0:
+        continue
+    solid_pct = solid[zone_mask].mean()*100
+    x_ctr     = 0.5*(x0+x1)
+
+    if solid[zone_mask].sum() > 0:
+        z_s_min = cz[zone_mask & solid].min()
+        z_s_max = cz[zone_mask & solid].max()
+    else:
+        z_s_min = z_s_max = 0
+
+    keep = "✓ KEEP" if solid_pct > 30 else "✗ VOID"
+    print(f"{i+1:>6} {x_ctr:>10.0f}mm {solid_pct:>7.1f}% "
+          f"{z_s_min:>11.1f}mm {z_s_max:>11.1f}mm {keep:>8}")
+    zone_info.append((x_ctr, solid_pct, z_s_min, z_s_max))
+
+# ── PLOT POUR CATIA REFERENCE ─────────────────────────────────────────
+fig, ax = plt.subplots(figsize=(18, 7))
+ax.set_facecolor('#1a1a2e')
+
+# Void
+ax.scatter(cx[~solid], cz[~solid],
+           c='#3333aa', s=6, alpha=0.6, label='Void (remove)')
+# Solid
+ax.scatter(cx[solid],  cz[solid],
+           c='#cc2222', s=6, alpha=0.9, label='Solid (keep)')
+
+# Annotate spar positions
+x_front = x_le + 0.25*chord
+x_rear  = x_le + 0.75*chord
+ax.axvline(x_front, color='yellow', linestyle='--', linewidth=1.5,
+           label=f'Front spar 25% = {x_front:.0f}mm')
+ax.axvline(x_rear,  color='orange', linestyle='--', linewidth=1.5,
+           label=f'Rear spar 75%  = {x_rear:.0f}mm')
+
+# Annotate void regions avec flèches
+void_regions = [(x, sp, zn, zx) for (x, sp, zn, zx) in zone_info if sp < 30]
+for (x, sp, zn, zx) in void_regions:
+    ax.annotate(f'VOID\n{sp:.0f}%',
+                xy=(x, (zn+zx)/2),
+                fontsize=7, color='cyan', ha='center',
+                bbox=dict(boxstyle='round,pad=0.2', facecolor='#000033',
+                          alpha=0.7, edgecolor='cyan'))
+
+ax.set_xlabel('x — chord direction [mm]', fontsize=11)
+ax.set_ylabel('z — thickness direction [mm]', fontsize=11)
+ax.set_title(f'RIB TOPOLOGY — Reference for CATIA\n'
+             f'Chord={chord:.0f}mm | Thickness={thick:.0f}mm | '
+             f'Vol fraction={solid.mean():.2f}',
+             fontsize=12)
+ax.set_aspect('equal')
+ax.legend(loc='upper right', fontsize=9)
+
+# Grille de référence
+ax.grid(True, alpha=0.2, color='white')
+ax.set_xticks(np.arange(0, chord+1, 100))
+ax.set_yticks(np.arange(int(z_min*1e3)-5, int(z_max*1e3)+5, 10))
+
+plt.tight_layout()
+plt.savefig("rib_catia_reference.png", dpi=250, bbox_inches='tight')
+print("\nSaved: rib_catia_reference.png  ← In ra và dùng để vẽ CATIA!")
+plt.show()
+
+# ── IN TỌA ĐỘ CHO CATIA ──────────────────────────────────────────────
+print("\n" + "="*60)
+print("CATIA SKETCH COORDINATES (mm)")
+print("="*60)
+print(f"Chord direction  : X axis, from {x_le:.0f} to {x_le+chord:.0f}mm")
+print(f"Thickness dir    : Z axis, from {z_min*1e3:.1f} to {z_max*1e3:.1f}mm")
+print(f"Front spar BC    : X = {x_front:.0f}mm")
+print(f"Rear spar BC     : X = {x_rear:.0f}mm")
+print(f"Top flange       : Z > {(z_max-0.05*(z_max-z_min))*1e3:.1f}mm")
+print(f"Bottom flange    : Z < {(z_min+0.05*(z_max-z_min))*1e3:.1f}mm")
+print("\nVOID REGIONS TO REMOVE IN CATIA:")
+for i, (x, sp, zn, zx) in enumerate(zone_info):
+    if sp < 30:
+        print(f"  Void {i+1}: x≈{x:.0f}mm | z=[{zn:.1f}, {zx:.1f}]mm")
+print("\nSOLID MEMBERS TO KEEP:")
+for i, (x, sp, zn, zx) in enumerate(zone_info):
+    if sp >= 50:
+        print(f"  Web {i+1}: x≈{x:.0f}mm | z=[{zn:.1f}, {zx:.1f}]mm")

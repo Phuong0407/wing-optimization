@@ -1,0 +1,97 @@
+ * ============================================================ 
+ * BENCHMARK: Cylindrical Shell - Cantilever under Internal Pressure 
+ * R=1m, H=5m, t=1mm, E=210GPa, nu=0.3, p=101325 Pa 
+ * ============================================================ 
+   
+ * ── PARAMETRES ────────────────────────────────────────────── 
+ R    = 1.0    ; 
+ H    = 1.0    ; 
+ T    = 0.01   ; 
+ E    = 210.E9 ; 
+ NU   = 0.3    ; 
+ P    = 101325. ; 
+   
+ NZ   = 50 ; 
+ NTHETA = 50 ; 
+   
+ SMALL = 1.E-5; 
+ OPTI 'DIME' 3 ELEM TRI3; 
+   
+ * Ligne de base (generatrice) 
+ P0 = R 0. 0.; 
+ P1 = R 0. H; 
+ L0 = DROI P0 NZ P1; 
+   
+ CYL = L0 ROTA NTHETA 360. (0. 0. 0.) (0. 0. 1.0); 
+   
+ * ── TYPE D'ELEMENT COQUE ───────────────────────────────────── 
+ MOD1 = MODE CYL 'MECANIQUE' 'ELASTIQUE' 'DST' ; 
+ MAT1 = MATE MOD1 'YOUN' E 'NU' NU 'EPAI' T ; 
+   
+ * ── CONDITIONS AUX LIMITES ─────────────────────────────────── 
+ * Face inferieure z=0 : encastrement 
+ A = CYL POIN 'PLAN' (-100. 0. 0.) (100. 0. 0.) (0. 100. 0.) 1E-3; 
+   
+ B = FACE 4 CYL; 
+   
+ * TRAC (CYL ET B); 
+   
+ CL1 = BLOQ 'DEPL' B; 
+ CL2 = BLOQ 'ROTA' B; 
+ CL3 = BLOQ 'ROTA' P0; 
+ CL = CL1 et CL2 ET CL3; 
+ * CL = CL1; 
+   
+   
+ * ── CHARGEMENT: PRESSION INTERNE ───────────────────────────── 
+ * Pression appliquee sur la face interne du cylindre 
+ * CHARGE = PRES 'COQU' MOD1 P 'NORM'; 
+   
+ MOP = 'MODE' CYL 'CHARGEMENT' 'PRESSION' 'DST' ; 
+ MAP = 'PRES' MOP 'PRES' 101325. ; 
+ CHARGE = 'BSIG' MOP MAP ; 
+ * Note: signe negatif car pression interne (normale sortante) 
+   
+ * ── RESOLUTION ─────────────────────────────────────────────── 
+ * Rigidite 
+ RIG1 = RIGI MOD1 MAT1 ; 
+ RIG  = RIG1 ET CL ; 
+   
+ * Resolution lineaire 
+ CHARGE = PRES 'COQU' MOD1 -101325. 'NORM'; 
+ UU = RESO RIG CHARGE; 
+   
+ * ── POST-TRAITEMENT ────────────────────────────────────────── 
+ UZMAX = MAXI (EXCO UU UZ) ABS; 
+ UXMAX = MAXI (EXCO UU UX) ABS; 
+ UYMAX = MAXI (EXCO UU UY) ABS; 
+ RZMAX = MAXI (EXCO UU RZ) ABS; 
+ RXMAX = MAXI (EXCO UU RX) ABS; 
+ RYMAX = MAXI (EXCO UU RY) ABS; 
+   
+ MESS 'MAX UX: ' UXMAX ' m'; 
+ MESS 'MAX UY: ' UYMAX ' m'; 
+ MESS 'MAX UZ: ' UZMAX ' m'; 
+   
+ MESS 'MAX RX: ' RXMAX ' rad'; 
+ MESS 'MAX RY: ' RYMAX ' rad'; 
+ MESS 'MAX RZ: ' RZMAX ' rad'; 
+   
+   
+ SIG = SIGMA MOD1 MAT1 UU; 
+ * TRAC SIG MOD1; 
+   
+   
+ VMISSTRESS = VMIS MOD1 MAT1 SIG; 
+ VMISSTRESSMAX = MAXI (VMISSTRESS) ABS; 
+ MESS 'MAXIMUM VON MISES STRESS' (VMISSTRESSMAX); 
+   
+   
+ DEFO0 = DEFO CYL 0.0 UU GRIS; 
+ DEFO1 = DEFO CYL UU (EXCO UU 'UR'); 
+   
+ TRAC  (DEFO1 et DEFO0) ; 
+   
+ ur1A  = EXTR uu 'UX' P1 ; 
+ * ur1B  = EXTR uu 'UR' PB ; 
+ MESS ' DEPLACEMENT RADIAL EN P1 CALCULE :' ur1A; 

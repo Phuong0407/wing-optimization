@@ -1,0 +1,16 @@
+type,name,value,unit,config
+eigenmode,mode_1,0.566849,lambda_cr,wingbox
+eigenmode,mode_2,0.674383,lambda_cr,wingbox
+eigenmode,mode_3,0.688433,lambda_cr,wingbox
+eigenmode,mode_4,1.049736,lambda_cr,wingbox
+eigenmode,mode_5,1.076487,lambda_cr,wingbox
+eigenmode,mode_6,1.385041,lambda_cr,wingbox
+eigenmode,mode_7,1.417805,lambda_cr,wingbox
+eigenmode,mode_8,1.711591,lambda_cr,wingbox
+eigenmode,mode_9,1.786164,lambda_cr,wingbox
+eigenmode,mode_10,1.87719,lambda_cr,wingbox
+panel_BI,Upper skin,0.299773,sigma/sigma_cr,wingbox
+panel_BI,Lower skin,0.646382,sigma/sigma_cr,wingbox
+panel_BI,Main spar,0.800167,sigma/sigma_cr,wingbox
+panel_BI,Tail spar,0.799932,sigma/sigma_cr,wingbox
+panel_BI,Rib  750mm,0.798298,sigma/sigma_cr,wingbox

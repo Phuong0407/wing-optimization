@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<!-- PROGRAMME=CASTEM/SORVTK   UTILISATEUR=grasvis   DATE=27/02/2026   TITRE=wingRESULT.vtk -->
+<VTKFile type="Collection" version="0.1">
+    <Collection>
+        <DataSet part="0001" name="MESH" file="wingRESULT.vtk.0001.vtu"/>
+    </Collection>
+</VTKFile>

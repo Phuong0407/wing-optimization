@@ -1,0 +1,5 @@
+MESH = LIRE 'STL' 'wing.stl';
+ELIM 1.E-6  MESH;
+
+OPTI 'SORT' 'wing.med';
+SORT 'MED' MESH;
